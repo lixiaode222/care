@@ -7,25 +7,34 @@ use Illuminate\Support\Facades\Auth;
 
 class SessionsController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('guest', [
+            'only' => ['create']
+        ]);
+    }
+
+
     //登陆页面
     public function create(){
         return view('sessions.create');
     }
 
     //处理登陆逻辑
-    public function store(Request $request){
-         $credentials = $this->validate($request,[
-             'email' => 'required|email|max:255',
-             'password' => 'required'
-          ]);
+    public function store(Request $request)
+    {
+        $credentials = $this->validate($request, [
+            'email' => 'required|email|max:255',
+            'password' => 'required'
+        ]);
 
         if (Auth::attempt($credentials, $request->has('remember'))) {
-             session()->flash('success', '欢迎回来!');
-             return redirect()->route('users.show', [Auth::user()]);
-         }else{
-             session()->flash('danger', '很抱歉，您的邮箱和密码不匹配');
-             return redirect()->back();
-         }
+            session()->flash('success', '欢迎回来！');
+            return redirect()->intended(route('users.show', [Auth::user()]));
+        } else {
+            session()->flash('danger', '很抱歉，您的邮箱和密码不匹配');
+            return redirect()->back();
+        }
     }
 
     //处理登出逻辑
